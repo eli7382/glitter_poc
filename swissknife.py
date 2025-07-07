@@ -1,17 +1,18 @@
 import glitter
 
+
 def print_menu():
     """
     a function to print the vulnerabilities menu to the user
     :return: none
     """
-    print("GLITTER APP VULNERABILITY POC\n1. Authentication Bypass (Login with checksum manipulation)\n2. Send Multiple Likes from Same User\n3. Send glit with different profile image\n4. Send Like with Fake Username\n5. Send Glit with Past Date\n6. Access Other User's Feed\n7. Send to Private Account\n8. Send Glit with Colored Font\n9. Send XSS Image Payload\n10. Send XSS Link Payload\n11. Send Comment with Fake Name\n12. Send Multiple Wows from Same User\n0. Exit")
+    print("GLITTER APP AND WEBSITE VULNERABILITY POC\n1. Login into any user (app only)\n2. Send Multiple Likes from Same User\n3. Send glit with different profile image\n4. Send Like with Fake Username\n5. Send Glit with Past Date\n6. Access Other User's Feed\n7. Send to Private Account\n8. Send Glit with Colored Font\n9. Send XSS Image Payload\n10. Send XSS Link Payload\n11. Send Comment with Fake Name\n12. Send Multiple Wows from Same User\n13. XSRF, send a message to yourself from any user that you want\n14. PRIVACY - get private information of other users\n15. post a video to other user's feed\n0. Exit")
 
 
 def main():
     while True:
-        global username
-        username = input("Enter your username")
+        username = input("Enter your username: ")
+        password = input("Enter your password: ")
         print_menu()
         choice = input("\nEnter your choice: ")
         if choice == "0":
@@ -66,3 +67,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
