@@ -95,45 +95,92 @@ def connect_to_server():
     return sock
 
 
-def login_with_checksum_bypass(login_username):
+def login_with_checksum_bypass(login_username, login_password=None):
+    """Login to the server and automatically handle the checksum step.
+
+    If ``login_password`` is ``None`` the function behaves like the old
+    bypass flow where a dummy password is used in order to calculate the
+    required checksum and construct a matching password. When a password is
+    supplied the function will authenticate with that password and submit the
+    checksum returned by the server automatically.
+
+    Parameters
+    ----------
+    login_username : str
+        Username to log in with.
+    login_password : str, optional
+        Password to use. When ``None`` a dummy password is generated to bypass
+        the checksum requirement.
+
+    Returns
+    -------
+    tuple
+        ``(sock, user_id)`` if authentication succeeds.
     """
-    a function to login into the server (without password)
-    :param login_username: the username of the profile we want to log into
-    :type login_username: str
-    :return: the conversation socket and the user id (if found)
-    :rtype: tuple
-    """
+
     connect_to_server()
-    dummy_password = "~*`'>``~"
-    login_msg = ('100#{gli&&er}{"user_name":"' + login_username + '","password":"' + dummy_password + '","enable_push_notifications":true}##')
+
+    if login_password is None:
+        dummy_password = "~*`'>``~"
+        login_msg = (
+            '100#{gli&&er}{"user_name":"'
+            + login_username
+            + '","password":"'
+            + dummy_password
+            + '","enable_push_notifications":true}##'
+        )
+    else:
+        login_msg = (
+            '100#{gli&&er}{"user_name":"'
+            + login_username
+            + '","password":"'
+            + login_password
+            + '","enable_push_notifications":true}##'
+        )
+
     response = send_and_receive_app(login_msg)
     print("Response: " + response)
+
     if "ascii checksum:" in response:
         checksum_start = response.find("ascii checksum: ") + 16
         checksum_end = response.find("{", checksum_start)
         required_checksum = int(response[checksum_start:checksum_end])
         print("Server requires checksum: " + str(required_checksum))
-        current_sum = calculate_checksum(login_username, "")
-        needed_for_password = required_checksum - current_sum
-        if needed_for_password > 0:
-            if needed_for_password < 127:
-                password = chr(needed_for_password)
+
+        if login_password is None:
+            current_sum = calculate_checksum(login_username, "")
+            needed_for_password = required_checksum - current_sum
+            if needed_for_password > 0:
+                if needed_for_password < 127:
+                    password = chr(needed_for_password)
+                else:
+                    password = "a" * (needed_for_password // 97)
             else:
-                password = "a" * (needed_for_password // 97)
+                password = "1"
+            login_msg = (
+                '100#{gli&&er}{"user_name":"'
+                + login_username
+                + '","password":"'
+                + password
+                + '","enable_push_notifications":true}##'
+            )
+            response = send_and_receive_app(login_msg)
+            print("Login response: " + response)
+            if "Please complete ascii checksum" in response:
+                checksum_msg = '110#{gli&&er}' + str(required_checksum) + '##'
+                response = send_and_receive_app(checksum_msg)
+                print("Authentication response: " + response)
         else:
-            password = "1"
-        login_msg = ('100#{gli&&er}{"user_name":"' + login_username + '","password":"' + password + '","enable_push_notifications":true}##')
-        response = send_and_receive_app(login_msg)
-        print("Login response: " + response)
-        if "Please complete ascii checksum" in response:
             checksum_msg = '110#{gli&&er}' + str(required_checksum) + '##'
             response = send_and_receive_app(checksum_msg)
             print("Authentication response: " + response)
-            if "Authentication approved" in response:
-                print("Successfully bypassed authentication!")
-                id_start = response.find('"id":') + 5
-                id_end = response.find(',', id_start)
-                user_id = response[id_start:id_end]
+
+        if "Authentication approved" in response:
+            print("Successfully logged in!")
+            id_start = response.find('"id":') + 5
+            id_end = response.find(',', id_start)
+            user_id = response[id_start:id_end]
+
     return sock, user_id
 
 
