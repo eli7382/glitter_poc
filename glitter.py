@@ -127,9 +127,7 @@ def login_with_checksum_bypass(login_username, login_password):
         else:
             if "Authentication approved" in response:
                 print("Successfully logged in!")
-                id_start = response.find('"id":') + 5
-                id_end = response.find(',', id_start)
-                user_id = response[id_start:id_end]
+                extract_user_id(response)
     return sock, user_id
 
 
@@ -298,6 +296,7 @@ def login_website():
     if response.status_code == 200:
         print("Successfully logged in!")
         extract_sparkle_cookie(response.text)
+        extract_user_id(response.text)
     return response
 
 
@@ -308,6 +307,19 @@ def extract_sparkle_cookie(response_text):
         end = response_text.find('"', start)
         sparkle = response_text[start:end]
         cookie = {"sparkle": sparkle}
+
+
+def extract_user_id(response_text):
+    """Extract the user_id from the server response text."""
+    global user_id
+    if '"id":' in response_text:
+        id_start = response_text.find('"id":') + 5
+        id_end = response_text.find(',', id_start)
+        if id_end == -1:
+            id_end = response_text.find('}', id_start)
+        user_id = response_text[id_start:id_end]
+        return user_id
+    return None
 
 
 def get_password():
