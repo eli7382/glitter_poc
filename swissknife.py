@@ -1,9 +1,5 @@
 import glitter
 
-username = None
-password = None
-target_user_id = None
-
 def print_menu():
     """
     a function to print the vulnerabilities menu to the user
@@ -14,19 +10,16 @@ def print_menu():
 
 def main():
     while True:
-        global username
-        global password
-        global target_user_id
-        username = input("Enter your username: ")
-        password = input("Enter your password: ")
+        glitter.username = input("Enter your username: ")
+        glitter.password = input("Enter your password: ")
         print_menu()
         choice = input("\nEnter your choice: ")
         if choice == "0":
             print("Exiting...")
             break
         elif choice == "1":
-            username = input("Enter username to bypass auth (for example: !@#098): ")
-            glitter.login_with_checksum_bypass(username)
+            glitter.username = input("Enter username to bypass auth (for example: !@#098): ")
+            glitter.login_with_checksum_bypass(glitter.username)
             if glitter.sock:
                 glitter.sock.close()
         elif int(choice) in range(1, 13):
@@ -45,10 +38,10 @@ def main():
             elif choice == "5":
                 glitter.send_glit_from_past()
             elif choice == "6":
-                target_user_id = input("Enter the target's user_id you want to see it's feed (for example: 22779): ")
+                glitter.target_user_id = input("Enter the target's user_id you want to see it's feed (for example: 22779): ")
                 glitter.access_other_user_feed()
             elif choice == "7":
-                target_user_id = input("Enter the target's user_id you want to send a glit to (for example: 22779): ")
+                glitter.target_user_id = input("Enter the target's user_id you want to send a glit to (for example: 22779): ")
                 glitter.send_to_private_account()
             elif choice == "8":
                 color = input("Enter the color you want the text to be (for example: white, blue, purple): ")
@@ -68,7 +61,7 @@ def main():
         elif choice in range (12, 16):
             glitter.login_website()
             if choice == "13":
-                target_user_id = input("Enter the target's user_id you want to send a video to (for example: 22779): ")
+                glitter.target_user_id = input("Enter the target's user_id you want to send a video to (for example: 22779): ")
                 glitter.xsrf_send_message_to_yourself_from_another_user()
             elif choice == "14":
                 glitter.post_video_to_another_user_feed()
