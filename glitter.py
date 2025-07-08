@@ -4,16 +4,18 @@ import requests
 
 SERVER_PORT = 1336
 SERVER_IP = "44.224.228.136"
-URL = "glitter.org.il"
+URL = "http://glitter.org.il/"
 
 # Global variables used across the module. These are populated during
 # the login process and reused by the various PoC helper functions so
 # callers don't need to pass them around.
+
 sock = None
 user_id = None
 username = None
 password = None
 current_time = None
+cookie = None
 
 
 def send_and_receive_app(message):
@@ -36,14 +38,22 @@ def send_and_receive_app(message):
     return response
 
 
-def send_and_receive_website(message):
+def send_and_receive_website(method, path, params=None, data=None, headers=None, cookies=None):
     """
     a function to send a message to the server and receive a response, website only
-    :param message: the message to send to the website
-    :type message: str
     :return: the response from the server
     :rtype: str
     """
+    url = URL + path
+    default_headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+    }
+    if headers:
+        default_headers.update(headers)
+    resp = requests.request(method, url, params=params, data=data, headers=default_headers, cookies={"sparkle": cookie},)
+    return resp
 
 
 def calculate_checksum():
