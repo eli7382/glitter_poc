@@ -39,22 +39,30 @@ def send_and_receive_app(message):
     return response
 
 
-def send_and_receive_website(method, path, params=None, data=None, referer='home'):
-    """
-    a function to send a message to the server and receive a response, website only
-    :return: the response from the server
-    :rtype: str
-    """
+def send_and_receive_website(method, path, params=None, data=None, referer="home"):
+    """Send an HTTP request to the Glitter website and return the response text."""
     global cookie
+
     url = URL + path
     headers = dict(DEFAULT_HEADERS)
-    headers['Referer'] = URL + referer
+    headers["Referer"] = URL + referer
+
     use_cookie = not (referer == "login" or path == "user/")
-    if use_cookie and cookie:
-        resp = requests.request(method=method, url=url, params=params, data=data, headers=headers, cookie=cookie)
+    cookies = cookie if use_cookie and cookie else None
+
+    method = method.upper()
+    if method == "GET":
+        resp = requests.get(url=url, params=params, headers=headers, cookies=cookies)
+    elif method == "POST":
+        resp = requests.post(url=url, params=params, data=data, headers=headers, cookies=cookies)
+    elif method == "PUT":
+        resp = requests.put(url=url, params=params, data=data, headers=headers, cookies=cookies)
+    elif method == "DELETE":
+        resp = requests.delete(url=url, params=params, data=data, headers=headers, cookies=cookies)
     else:
-        resp = requests.request(method=method, url=url, params=params, data=data, headers=headers)
-    return resp
+        raise ValueError(f"Unsupported method: {method}")
+
+    return resp.text
 
 
 def calculate_checksum():
